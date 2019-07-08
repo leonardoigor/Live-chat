@@ -10,6 +10,13 @@ import ListItemText from '@material-ui/core/ListItemText';
 
 // chips
 import Chip from '@material-ui/core/Chip';
+// button
+import Button from '@material-ui/core/Button';
+// textFiled
+import TextField from '@material-ui/core/TextField';
+
+import { CTX } from './Store'
+
 
 
 const useStyles = makeStyles(theme => ({
@@ -29,18 +36,31 @@ const useStyles = makeStyles(theme => ({
     chatWindow: {
         width: '70%',
         height: '300px',
-        padding:'20px'
+        padding: '20px',
     },
     chatBox: {
         width: '85%'
     },
     button: {
         width: '15%'
+    },
+    flexChat: {
+        display: 'flex',
+        alignItems: 'center',
     }
 }));
 
 export default function Dashboard() {
     const classes = useStyles();
+    // CTX Store
+    const { allChats, sendChatAction, user } = React.useContext(CTX);
+    const topics = Object.keys(allChats);
+
+    // local state
+    const [activeTopic, changeActiveTopic] = React.useState(topics[0])
+    const [textValue, changeText] = React.useState('');
+
+
 
     return (
         <div>
@@ -49,16 +69,16 @@ export default function Dashboard() {
                     Chat app
             </Typography>
                 <Typography variant="h5" component="h5">
-                    Topic placeholder
-            </Typography>
+                    {activeTopic}
+                </Typography>
                 <div>
                     <div className={classes.flex}>
                         <div className={classes.topicsWindow}>
                             <List>
                                 {
-                                    ['topic'].map(topic => (
-                                        <ListItem ket={topic} button>
-                                            <ListItemText primary="topic"></ListItemText>
+                                    topics.map(topic => (
+                                        <ListItem onClick={(e) => changeActiveTopic(e.target.innerText)} ket={topic} button>
+                                            <ListItemText primary={topic}></ListItemText>
                                         </ListItem>
                                     ))
                                 }
@@ -66,10 +86,11 @@ export default function Dashboard() {
                         </div>
                         <div className={classes.chatWindow}>
                             {
-                                [{ from: 'user', msg: 'hello' }].map((chat,i) => (
-                                    <div className={classes.flex} key={i}>
-                                        <Chip label={chat.from} className={classes.chip} />
-                                        <Typography variant='p'>{ chat.msg }</Typography>
+                                allChats[activeTopic].map((chat, i) => (
+                                    <div className={classes.flexChat} key={i}>
+                                        <Chip label={chat.from} className={classes.chip} color="primary" />
+                                        <Typography variant='body1' gutterBottom>{chat.msg}</Typography>
+                                        <br /><br />
                                     </div>
                                 ))
                             }
@@ -77,6 +98,23 @@ export default function Dashboard() {
                     </div>
 
                     <div className={classes.flex}>
+                        <TextField
+                            label="Send a chat"
+                            className={classes.chatBox}
+                            value={textValue}
+                            onChange={e => changeText(e.target.value)}
+                        />
+
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.button}
+                            onClick={() => {
+                                sendChatAction({ from: user, msg: textValue, topic: activeTopic })
+                                changeText('')
+                            }}>
+                            Send
+                        </Button>
                     </div>
                 </div>
             </Paper>
